@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "github.com/DarkXPixel/Vibe/proto/user";
+
+service UserService {
+  rpc GetUser(GetUserRequest) returns (UserProfile);
+  rpc UpdateUser(UpdateUserRequest) returns (UserProfile);
+}
+
+message GetUserRequest {
+  string user_id = 1;
+}
+
+message UpdateUserRequest {
+  string user_id = 1;
+  string display_name = 2;
+  string avatar_url = 3;
+}
+
+message UserProfile {
+  string user_id = 1;
+  string display_name = 2;
+  string avatar_url = 3;
+}
