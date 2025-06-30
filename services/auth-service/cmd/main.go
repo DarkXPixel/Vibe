@@ -10,6 +10,17 @@ import (
 )
 
 func main() {
+	cfg := internal.LoadConfig()
+	err := internal.RunMigrate(cfg.DatabaseURL)
+	if err != nil {
+		log.Fatalf("Migration is NOT OK: %v", err)
+	}
+	db, err := internal.ConnectDB(cfg.DatabaseURL)
+	if err != nil {
+		log.Fatalf("Failed to connect to DB: %v", err)
+	}
+	defer db.Close()
+
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
@@ -17,7 +28,7 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 
-	authServer := internal.NewAuthServer()
+	authServer := internal.NewAuthServer(db, cfg)
 
 	authpb.RegisterAuthServiceServer(grpcServer, authServer)
 
