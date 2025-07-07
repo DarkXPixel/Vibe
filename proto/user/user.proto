@@ -5,22 +5,28 @@ package user;
 option go_package = "github.com/DarkXPixel/Vibe/proto/user";
 
 service UserService {
-  rpc GetUser(GetUserRequest) returns (UserProfile);
-  rpc UpdateUser(UpdateUserRequest) returns (UserProfile);
+  rpc GetOrCreateUser(GetOrCreateUserRequest) returns (UserResponse);
+  rpc GetUserByPhone(GetUserByPhoneRequest) returns (UserResponse);
 }
 
-message GetUserRequest {
-  string user_id = 1;
+message GetUserByPhoneRequest {
+  string phone = 1;
 }
 
-message UpdateUserRequest {
-  string user_id = 1;
-  string display_name = 2;
-  string avatar_url = 3;
+message UserResponse {
+  bool success = 1;
+  User user = 2;
 }
 
-message UserProfile {
+message GetOrCreateUserRequest {
+  string phone = 1;
+}
+
+message User {
   string user_id = 1;
-  string display_name = 2;
-  string avatar_url = 3;
+  string phone = 2;
+  string user_name = 3;
+  string created_at = 4;
+  string updated_at = 5;
+  string avatar_thumbnail_url = 6;
 }

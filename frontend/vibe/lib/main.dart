@@ -1,11 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:vibe/generated/auth/auth.pbgrpc.dart';
+import 'package:vibe/services/auth_client.dart';
 
 void main() {
-  runApp(const MyApp());
+  final client = AuthClient();
+  runApp(MyApp(client: client.client));
+
+  // final channel = ClientChannel(
+  //     'localhost',
+  //     port: 50051,
+  //     options: const ChannelOptions(credentials: ChannelCredentials.insecure())
+  //   );
+
+  // final client = AuthServiceClient(channel);
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final AuthServiceClient client;
+  const MyApp({super.key, required this.client});
   
   @override
   Widget build(BuildContext context) {
@@ -14,13 +26,14 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const LoginPage(),
+      home: LoginPage(client: client,),
     );
   }
 }
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  final AuthServiceClient client;
+  const LoginPage({super.key, required this.client});
   
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -34,34 +47,57 @@ class _LoginPageState extends State<LoginPage> {
   
   bool _isLoading = false;
   
-  void _login() {
+  void _login() async {
     if (!_formKey.currentState!.validate()) return;
     
     setState(() {
       _isLoading = true;
     });
     
-    // Тут будет вызов API, пока заглушка:
-    Future.delayed(const Duration(seconds: 2), () {
+    final username = _usernameController.text.trim();
+    final password = _passwordController.text;
+    
+    try {
+      final request = LoginRequest()
+      ..username = username
+      ..password = password;
+
+      final respone = await widget.client.login(request);
+
       setState(() {
         _isLoading = false;
       });
-      
-      final username = _usernameController.text;
-      final password = _passwordController.text;
-      
-      if (username == "test" && password == "1234") {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login successful!')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Invalid credentials')),
-        );
-      }
-    });
+
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Login succesful! Token: ${respone.token}')),);
+
+    } catch(e) {
+      setState(() {
+        _isLoading = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Login failed: $e')),
+      );
+    }
+
+    // if (username == "test" && password == "1234") {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     const SnackBar(content: Text('Login successful!')),
+    //   );
+    // } else {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     const SnackBar(content: Text('Invalid credentials')),
+    //   );
+    // }
   }
   
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -5,33 +5,46 @@ package auth;
 option go_package = "github.com/DarkXPixel/Vibe/proto/auth";
 
 service AuthService {
-    rpc Register(RegisterRequest) returns (AuthResponse);
-    rpc Login(LoginRequest) returns (AuthResponse);
-    rpc ValidateToken(TokenRequest) returns (UserSession);
+    rpc SendVerificationCode(PhoneNumberRequest) returns (SendCodeResponse);
+    rpc VerifyCode(VerifyCodeRequest) returns (AuthResponse);
+    rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenRespone);
+    //rpc ValidateToken(TokenRequest) returns (UserSession);
 }
 
-message RegisterRequest {
-    string username = 1;
-    string password = 2;
-    string email = 3;
+message PhoneNumberRequest {
+    string phone_number = 1;
 }
 
-message LoginRequest {
-    string username = 1;
-    string password = 2;
+message SendCodeResponse {
+    string message = 1;
+    bool success = 2;
+    string token = 3;
 }
 
-message TokenRequest {
+message VerifyCodeRequest {
+    string phone_number = 1;
+    string code = 2;
+    string token = 3;
+}
+
+message ValidateTokenRequest {
     string token = 1;
 }
 
-message AuthResponse {
-    string token = 1;
+message ValidateTokenRespone {
+    bool success = 1;
     string user_id = 2;
 }
 
-message UserSession {
-    string user_id = 1;
-    string username = 2;
-    bool is_valid = 3;
+message AuthResponse {
+    bool success = 1;
+    string auth_token = 2;
+    string user_id = 3;
+    string message = 4;
 }
+
+// message UserSession {
+//     string user_id = 1;
+//     string username = 2;
+//     bool is_valid = 3;
+// }

@@ -1,6 +1,27 @@
 version: "3.9"
 
 services:
+  auth-service:
+    build:
+      context: ../services/auth-service
+    ports:
+      - "50051:50051"
+    env_file:
+      - ../services/auth-service/.env
+    depends_on:
+      - postgres-auth
+    volumes:
+      - ../migrations/auth-service:/app/migrations
+
+  envoy:
+    image: envoyproxy/envoy:tools-v1.34.1
+    container_name: envoy
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    volumes:
+      - "./envoy.yaml:/etc/envoy/envoy.yaml:ro"
+    restart: unless-stopped
   postgres-auth:
     image: postgres:16
     container_name: vibe-auth-postgres
@@ -24,20 +45,18 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-  # redis:
-  #   image: redis:7
-  #   container_name: vibe-redis
-  #   restart: unless-stopped
-  #   ports:
-  #     - "6379:6379"
-  # mongo:
-  #   image: mongo:6
-  #   container_name: vibe-mongo
-  #   restart: unless-stopped
-  #   ports:
-  #     - "27017:27017"
-  #   volumes:
-  #     - mongo-data:/data/db
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_PASSWORD=password
+    volumes:
+      - redis_data:/data
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+
 volumes:
   pgdata-auth:
+  redis_data:
 #  mongo-data:
