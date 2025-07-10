@@ -16,16 +16,21 @@ type Config struct {
 }
 
 func LoadConfig() (*Config, error) {
-	err := godotenv.Load("../.env")
-	if err != nil {
-		return nil, err
+	godotenv.Load("../.env")
+	viper.AutomaticEnv()
+
+	configPath := viper.GetString("CONFIG_PATH")
+	if configPath == "" {
+		configPath = "./config"
 	}
 
-	viper.AutomaticEnv()
-	str := viper.GetString("APP_ENV")
-	viper.SetConfigName(str)
+	appEnv := viper.GetString("APP_ENV")
+	if appEnv == "" {
+		appEnv = "local"
+	}
+	viper.SetConfigName(appEnv)
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath("../config")
+	viper.AddConfigPath(configPath)
 
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, fmt.Errorf("error reading config file: %w", err)

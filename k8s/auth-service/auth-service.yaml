@@ -21,11 +21,26 @@ spec:
       containers:
         - name: auth
           image: auth-service:latest
+          imagePullPolicy: Never
           ports:
             - containerPort: 50051
+          env:
+            - name: APP_ENV
+              value: "prod"
+
+            - name: CONFIG_PATH
+              value: "/app/config"
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config
+              readOnly: true
+      volumes:
+        - name: config-volume
+          configMap:
+            name: auth-service-config
 ---
 apiVersion: v1
-kind: ServiceAccount
+kind: Service
 metadata:
   name: auth-service
 spec:
@@ -35,3 +50,4 @@ spec:
     - protocol: TCP
       port: 50051
       targetPort: 50051
+---
